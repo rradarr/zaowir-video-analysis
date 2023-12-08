@@ -9,48 +9,9 @@ import glob
 import random
 from pathlib import Path
 
-from encoder import NpEncoder
-
-
-class Image:
-    base_dir_path = Path.cwd() / "s3"
-
-    file_path: Path
-    rgb_data: cv2.typing.MatLike
-    bw_data: cv2.typing.MatLike
-
-    def __init__(self, filename: str, dont_load: bool = False):
-        self.file_path = Path(filename)
-        if not dont_load:
-            self.load_img()
-
-    def load_img(self):
-        self.rgb_data = cv2.imread(str(self.file_path))
-        self.bw_data = cv2.cvtColor(self.rgb_data, cv2.COLOR_BGR2GRAY)
-
-    def show(self):
-        cv2.imshow(self.file_path.name, self.rgb_data)
-        cv2.waitKey()
-
-
-def testing():
-    image = Image(f"{Path.cwd()}/s3/right_20.png")
-    print(numpy.shape(image.rgb_data))
-    
-    found_chessboard, corners = cv2.findChessboardCorners(image.bw_data, (8, 6))
-    if found_chessboard:
-        print(f"Chessboard found in {image.file_path.name}")
-        cv2.drawChessboardCorners(image.rgb_data, (8, 6), corners, True)
-        image.show()
-    else:
-        print(f"Chessboard not found in {image.file_path.name}")
-
-    cv2.destroyAllWindows()
-
-def get_object_points():
-    objp = numpy.zeros((8*6,3), numpy.float32)
-    objp[:,:2] = numpy.mgrid[0:8,0:6].T.reshape(-1,2) * 28.67
-    return objp
+from labs.shared.encoder import NpEncoder
+from labs.shared.image import Image
+from labs.shared.calibration_helpers import get_object_points
 
 def calibrate_stereo_and_save(out_file_name: str,
                               dataset_left_name_pattern: str,
@@ -293,11 +254,11 @@ def add_lines(image):
         cv2.line(image, (0, line), (image.shape[1], line), (0, 0, 255), 2)
 
 
-if __name__ == "__main__":
+def test_stereo():
     #calibrate_stereo_and_save("stereo_params.json", ".\\s3\\left_*.png", ".\\s3\\right_*.png")
 
     #load_and_rectify_stereo("stereo_params.json", ".\\s3\\left_255.png", ".\\s3\\right_255.png")
 
     #remap_test("stereo_params.json", ".\\s3\\left_255.png", ".\\s3\\right_255.png")
 
-    load_rectified_and_draw_epi("stereo_params.json", ".\\s3\\left_15.png", ".\\s3\\right_15.png")
+    load_rectified_and_draw_epi("stereo_params.json", ".\\s3\\left_10.png", ".\\s3\\right_10.png")

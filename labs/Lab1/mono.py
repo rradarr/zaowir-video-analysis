@@ -8,48 +8,9 @@ import glob
 import random
 from pathlib import Path
 
-from encoder import NpEncoder
-
-
-class Image:
-    base_dir_path = Path.cwd() / "s3"
-
-    file_path: Path
-    rgb_data: cv2.typing.MatLike
-    bw_data: cv2.typing.MatLike
-
-    def __init__(self, filename: str, dont_load: bool = False):
-        self.file_path = Path(filename)
-        if not dont_load:
-            self.load_img()
-
-    def load_img(self):
-        self.rgb_data = cv2.imread(str(self.file_path))
-        self.bw_data = cv2.cvtColor(self.rgb_data, cv2.COLOR_BGR2GRAY)
-
-    def show(self):
-        cv2.imshow(self.file_path.name, self.rgb_data)
-        cv2.waitKey()
-
-
-def testing():
-    image = Image(f"{Path.cwd()}/s3/right_20.png")
-    print(numpy.shape(image.rgb_data))
-    
-    found_chessboard, corners = cv2.findChessboardCorners(image.bw_data, (8, 6))
-    if found_chessboard:
-        print(f"Chessboard found in {image.file_path.name}")
-        cv2.drawChessboardCorners(image.rgb_data, (8, 6), corners, True)
-        image.show()
-    else:
-        print(f"Chessboard not found in {image.file_path.name}")
-
-    cv2.destroyAllWindows()
-
-def get_object_points():
-    objp = numpy.zeros((8*6,3), numpy.float32)
-    objp[:,:2] = numpy.mgrid[0:8,0:6].T.reshape(-1,2) * 0.0285
-    return objp
+from labs.shared.encoder import NpEncoder
+from labs.shared.image import Image
+from labs.shared.calibration_helpers import get_object_points
 
 def get_all_with_chessboard(name_pattern: str, chessboard_size: Tuple[int, int]) -> List[str]:
     images = glob.glob(name_pattern)
@@ -200,9 +161,7 @@ def remap_images(calibration_file_name: str, image_name_pattern: str):
 
         cv2.imwrite(f'{image.file_path.stem}_remapped.png', dst)
 
-if __name__ == "__main__":
-    cv2.setNumThreads(12)
-
+def test_mono():
     #get_all_with_chessboard(".\\s3\\left_*.png", (8, 6))
 
     #clibrate_and_save("with_subpix.json", ".\\s3\\right_*.png", False)
