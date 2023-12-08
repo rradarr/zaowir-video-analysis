@@ -1,5 +1,6 @@
 from typing import List, Tuple
 import cv2, cv2.typing
+import cv2.aruco
 import os
 import numpy
 import copy
@@ -161,8 +162,50 @@ def remap_images(calibration_file_name: str, image_name_pattern: str):
 
         cv2.imwrite(f'{image.file_path.stem}_remapped.png', dst)
 
+def find_aruko_chessboard(name_pattern: str, chessboard_size: Tuple[int, int]): 
+    points_object = [] 
+    points_image = [] 
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001) 
+
+    images = glob.glob(name_pattern) 
+    assert len(images) > 0 
+    names_with_chessboard: List[str] = [] 
+
+    # Get a sample image to determine the shape of images 
+    sample_image = Image(images[0]) 
+    image_size = sample_image.bw_data.shape[::-1] 
+
+    for file in images: 
+        image = Image(file) 
+
+        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250) 
+        board = cv2.aruco.CharucoBoard( 
+            chessboard_size, 
+            0.044, 
+            0.034, 
+            aruco_dict 
+        ) 
+        corners, ids, rejected_image_points = cv2.aruco.detectMarkers(image.bw_data, aruco_dict) 
+        
+        if len(corners) > 0: 
+            names_with_chessboard.append(image.file_path.name) 
+            print(f"Found cheesboard in {image.file_path.name}") 
+ 
+
+            res, inter_corners, inter_ids = cv2.aruco.interpolateCornersCharuco(corners, ids, image.bw_data, board) 
+             
+            debug_image = copy.deepcopy(image.rgb_data) 
+            cv2.aruco.drawDetectedCornersCharuco(debug_image, inter_corners, inter_ids) 
+            new_size1 = int(image_size[0]/2) 
+            new_size2 = int(image_size[1]/2) 
+            debug_image = cv2.resize(debug_image, (new_size1, new_size2)) 
+            cv2.imshow("test", debug_image) 
+            cv2.waitKey() 
+
 def test_mono():
     #get_all_with_chessboard(".\\s3\\left_*.png", (8, 6))
+
+    find_aruko_chessboard(".\\aruko_test.jpg", (8, 11))
 
     #clibrate_and_save("with_subpix.json", ".\\s3\\right_*.png", False)
 
@@ -170,4 +213,4 @@ def test_mono():
 
     #undistort_images("with_subpix.json", ".\\s3\\right_100.png")
 
-    remap_images("with_subpix.json", ".\\s3\\right_100.png")
+    #remap_images("with_subpix.json", ".\\s3\\right_100.png")
