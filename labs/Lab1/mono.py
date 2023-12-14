@@ -163,6 +163,9 @@ def remap_images(calibration_file_name: str, image_name_pattern: str):
         cv2.imwrite(f'{image.file_path.stem}_remapped.png', dst)
 
 def find_aruko_chessboard(name_pattern: str, chessboard_size: Tuple[int, int]): 
+    PREVIEW = False
+    CALIBRATE = False
+
     points_object = [] 
     points_image = [] 
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001) 
@@ -193,14 +196,28 @@ def find_aruko_chessboard(name_pattern: str, chessboard_size: Tuple[int, int]):
  
 
             res, inter_corners, inter_ids = cv2.aruco.interpolateCornersCharuco(corners, ids, image.bw_data, board) 
-             
-            debug_image = copy.deepcopy(image.rgb_data) 
-            cv2.aruco.drawDetectedCornersCharuco(debug_image, inter_corners, inter_ids) 
-            new_size1 = int(image_size[0]/2) 
-            new_size2 = int(image_size[1]/2) 
-            debug_image = cv2.resize(debug_image, (new_size1, new_size2)) 
-            cv2.imshow("test", debug_image) 
-            cv2.waitKey() 
+            
+            if PREVIEW:
+                debug_image = copy.deepcopy(image.rgb_data) 
+                cv2.aruco.drawDetectedCornersCharuco(debug_image, inter_corners, inter_ids) 
+                new_size1 = int(image_size[0]/2) 
+                new_size2 = int(image_size[1]/2) 
+                debug_image = cv2.resize(debug_image, (new_size1, new_size2)) 
+                cv2.imshow("test", debug_image) 
+                cv2.waitKey() 
+    
+    names_with_chessboard.sort()
+    return names_with_chessboard
+
+def calculate_fov(smtx, imgSize):
+    fx = smtx[0][0]
+    fy = smtx[1][1]
+    width, height = imgSize
+
+    fovW = 2 * numpy.arctan(width / (2 * fx)) * 180 / numpy.pi
+    fovH = 2 * numpy.arctan(height / (2 * fy)) * 180 / numpy.pi
+
+    return fovW, fovH
 
 def test_mono():
     #get_all_with_chessboard(".\\s3\\left_*.png", (8, 6))
