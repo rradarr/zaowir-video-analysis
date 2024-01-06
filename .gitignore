@@ -167,3 +167,7 @@ s3/
 ss0/
 *.png
 *.jpg
+
+#other
+Motorcycle-perfect/
+*.ply

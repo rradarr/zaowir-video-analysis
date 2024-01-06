@@ -8,4 +8,6 @@ if __name__ == "__main__":
     cv2.setNumThreads(12)
     #mono.test_mono()
     #stereo.test_stereo()
-    charuco_stereo.test_chruco_stereo()
+    #charuco_stereo.test_chruco_stereo()
+    #disparity.test_disparity()
+    disparity.test_ply()
